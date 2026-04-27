@@ -22,8 +22,8 @@
     <div id="poemOutput">আপনার পছন্দের বিষয়ে কবিতা লিখতে উপরের বক্সে বিষয়টি লিখে বাটনে ক্লিক করুন।</div>
 
     <script>
-        // আপনার এপিআই কি
-        const GEMINI_API_KEY = "AIzaSyCUtI1zSODS6qMo5XJuz8P1UGEp_VZIwxk"; 
+        // আপনার নতুন এপিআই কি
+        const GEMINI_API_KEY = "AIzaSyDpzApcxD7q6FUSa8Oc_IyprbWiw_1_T4s"; 
 
         async function generateSonnet() {
             const userTopic = document.getElementById("topicInput").value;
@@ -36,8 +36,8 @@
 
             resultBox.innerText = "আপনার সনেট লেখা হচ্ছে, অনুগ্রহ করে অপেক্ষা করুন...";
 
-            // আপনার নির্দেশমতো gemini-2.5-flash ব্যবহার করা হলো
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+            // সঠিক মডেল gemini-1.5-flash ব্যবহার করা হলো
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
 
             const requestBody = {
                 contents: [{
@@ -71,7 +71,7 @@
                     const poem = data.candidates[0].content.parts[0].text;
                     resultBox.innerText = poem; 
                 } else {
-                    const reason = data.candidates[0].finishReason;
+                    const reason = data.candidates && data.candidates[0] ? data.candidates[0].finishReason : "অজানা কারণ";
                     resultBox.innerText = `গুগল কবিতাটি তৈরি করতে পারেনি। কারণ: ${reason}। অন্য বিষয় দিয়ে চেষ্টা করুন।`;
                 }
 
