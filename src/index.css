@@ -1,0 +1,40 @@
+@import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&family=Noto+Serif+Bengali:wght@400;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Hind Siliguri", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Noto Serif Bengali", ui-serif, Georgia, serif;
+  --color-maroon: #2D0F0F;
+  --color-gold: #D4AF37;
+}
+
+body {
+  @apply bg-[#1a0a0a] text-[#f5f2ed] min-h-screen selection:bg-yellow-500/30 overflow-x-hidden;
+  background-image: radial-gradient(circle at 50% 50%, #3d1616 0%, #1a0a0a 100%);
+  background-attachment: fixed;
+}
+
+.atmosphere-glow {
+  @apply absolute pointer-events-none;
+  background: radial-gradient(circle, rgba(212, 175, 55, 0.08) 0%, transparent 70%);
+}
+
+.glass-card {
+  @apply bg-white/[0.05] backdrop-blur-[30px] border border-white/10 shadow-[0_40px_100px_rgba(0,0,0,0.5)];
+}
+
+.poem-container {
+  font-family: var(--font-serif);
+  @apply leading-relaxed tracking-wide italic;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-[#D4AF37]/20 rounded-full hover:bg-[#D4AF37]/40 transition-colors;
+}
