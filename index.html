@@ -1,13 +1,83 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>My Google AI Studio App</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
-</html>
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>সনেট জেনারেটর</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; padding: 50px; background-color: #f4f4f9; }
+        input { padding: 12px; width: 300px; font-size: 16px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 5px; }
+        button { padding: 12px 25px; font-size: 16px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 5px; font-weight: bold; }
+        button:hover { background: #0056b3; }
+        #poemOutput { margin-top: 30px; font-size: 18px; white-space: pre-wrap; text-align: left; display: inline-block; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); max-width: 600px; line-height: 1.6; }
+    </style>
+</head>
+<body>
 
+    <h2>বাংলা সনেট জেনারেটর ✒️</h2>
+    <input type="text" id="topicInput" placeholder="কবিতার বিষয় লিখুন (যেমন: বৃষ্টি, নদী, প্রেম)">
+    <br>
+    <button onclick="generateSonnet()">কবিতা তৈরি করুন</button>
+    <br>
+    <div id="poemOutput">আপনার পছন্দের বিষয়ে কবিতা লিখতে উপরের বক্সে বিষয়টি লিখে বাটনে ক্লিক করুন।</div>
+
+    <script>
+        // আপনার এপিআই কি
+        const GEMINI_API_KEY = "AIzaSyCUtI1zSODS6qMo5XJuz8P1UGEp_VZIwxk"; 
+
+        async function generateSonnet() {
+            const userTopic = document.getElementById("topicInput").value;
+            const resultBox = document.getElementById("poemOutput");
+            
+            if(!userTopic) {
+                resultBox.innerText = "দয়া করে আগে একটি বিষয় লিখুন!";
+                return;
+            }
+
+            resultBox.innerText = "আপনার সনেট লেখা হচ্ছে, অনুগ্রহ করে অপেক্ষা করুন...";
+
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`;
+
+            const requestBody = {
+                contents: [{
+                    parts: [{ 
+                        text: `আপনি একজন প্রখ্যাত কবি। '${userTopic}' বিষয়ের উপর বাংলা ভাষায় একটি চমৎকার সনেট বা চতুর্দশপদী কবিতা লিখুন। প্রথম ৮ লাইন এবং পরের ৬ লাইন আলাদা করে লিখবেন। মোট ১৪ লাইন হবে। কোনো অতিরিক্ত কথা বা ভূমিকা ছাড়াই সরাসরি কবিতাটি লিখুন।` 
+                    }]
+                }],
+                safetySettings: [
+                    { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
+                    { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
+                    { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
+                    { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" }
+                ]
+            };
+
+            try {
+                const response = await fetch(url, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(requestBody)
+                });
+
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    resultBox.innerText = `দুঃখিত, একটি সমস্যা হয়েছে: ${data.error ? data.error.message : "সার্ভার এরর"}`;
+                    return;
+                }
+
+                if (data.candidates && data.candidates[0].content) {
+                    const poem = data.candidates[0].content.parts[0].text;
+                    resultBox.innerText = poem; 
+                } else {
+                    const reason = data.candidates[0].finishReason;
+                    resultBox.innerText = `গুগল কবিতাটি তৈরি করতে পারেনি। কারণ: ${reason}। অন্য বিষয় দিয়ে চেষ্টা করুন।`;
+                }
+
+            } catch (error) {
+                resultBox.innerText = "নেটওয়ার্ক সমস্যা! আপনার ইন্টারনেট বা ভিপিএন (VPN) কানেকশন চেক করুন।";
+            }
+        }
+    </script>
+</body>
+</html>
