@@ -36,7 +36,8 @@
 
             resultBox.innerText = "আপনার সনেট লেখা হচ্ছে, অনুগ্রহ করে অপেক্ষা করুন...";
 
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`;
+            // আপনার নির্দেশমতো gemini-2.5-flash ব্যবহার করা হলো
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
 
             const requestBody = {
                 contents: [{
