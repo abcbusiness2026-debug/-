@@ -1,139 +1,81 @@
-<!DOCTYPE html>
-<html lang="bn">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>সনেট জেনারেটর</title>
-    <style>
-        body { font-family: Arial, sans-serif; text-align: center; padding: 50px; background-color: #f4f4f9; }
-        input { padding: 12px; width: 300px; font-size: 16px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 5px; }
-        button { padding: 12px 25px; font-size: 16px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 5px; font-weight: bold; }
-        button:hover { background: #0056b3; }
-        
-        /* নতুন কার্ড ডিজাইন */
-        .output-container { display: flex; flex-direction: column; gap: 20px; align-items: center; margin-top: 30px; display: none; }
-        .card { background: white; padding: 25px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); max-width: 600px; width: 100%; text-align: left; }
-        
-        .poem-card { border-top: 5px solid #007bff; }
-        .summary-card { border-top: 5px solid #28a745; background-color: #fdfdfd; }
-        
-        h3 { margin-top: 0; margin-bottom: 15px; font-size: 20px; color: #333; }
-        .poem-text { font-size: 18px; white-space: pre-wrap; line-height: 1.6; color: #222; }
-        .summary-text { font-size: 16px; line-height: 1.6; color: #444; }
-        
-        #loadingMsg { margin-top: 20px; font-size: 18px; color: #007bff; font-weight: bold; }
-        .error-msg { color: red; font-weight: bold; margin-top: 20px; }
-    </style>
-</head>
-<body>
-
-    <h2>বাংলা সনেট জেনারেটর ✒️</h2>
-    <input type="text" id="topicInput" placeholder="কবিতার বিষয় লিখুন (যেমন: বৃষ্টি, নদী, প্রেম)">
-    <br>
-    <button onclick="generateSonnet()">কবিতা তৈরি করুন</button>
-    <br>
+async function generateSonnet() {
+    const userTopic = document.getElementById("topicInput").value;
+    const loadingMsg = document.getElementById("loadingMsg");
+    const outputContainer = document.getElementById("outputContainer");
+    const poemBox = document.getElementById("poemOutput");
+    const summaryBox = document.getElementById("summaryOutput");
+    const submitBtn = document.querySelector("button"); // বাটনটি ধরলাম
     
-    <div id="loadingMsg"></div>
+    if(!userTopic) {
+        loadingMsg.innerText = "দয়া করে আগে একটি বিষয় লিখুন!";
+        loadingMsg.className = "error-msg";
+        outputContainer.style.display = "none";
+        return;
+    }
 
-    <div class="output-container" id="outputContainer">
-        <div class="card poem-card">
-            <h3 style="color: #007bff;">📜 সনেট</h3>
-            <div id="poemOutput" class="poem-text"></div>
-        </div>
-        
-        <div class="card summary-card">
-            <h3 style="color: #28a745;">💡 মূলভাব</h3>
-            <div id="summaryOutput" class="summary-text"></div>
-        </div>
-    </div>
+    // বাটন নিষ্ক্রিয় করা হলো যাতে কেউ বারবার ক্লিক করতে না পারে
+    submitBtn.disabled = true; 
+    submitBtn.style.background = "#cccccc";
 
-    <script>
-        // গিটহাবের স্ক্যানারকে বোকা বানানোর জন্য চাবি ভাঙা আছে
-        const keyPart1 = "AIzaSy"; 
-        const keyPart2 = "Ac4VGPjXG0nPcQetvG9p5-Y61-cCPXLMM"; 
-        const GEMINI_API_KEY = keyPart1 + keyPart2;
+    loadingMsg.innerText = "আপনার সনেট এবং মূলভাব লেখা হচ্ছে, অনুগ্রহ করে অপেক্ষা করুন...";
+    loadingMsg.className = "";
+    outputContainer.style.display = "none";
 
-        async function generateSonnet() {
-            const userTopic = document.getElementById("topicInput").value;
-            const loadingMsg = document.getElementById("loadingMsg");
-            const outputContainer = document.getElementById("outputContainer");
-            const poemBox = document.getElementById("poemOutput");
-            const summaryBox = document.getElementById("summaryOutput");
-            
-            if(!userTopic) {
-                loadingMsg.innerText = "দয়া করে আগে একটি বিষয় লিখুন!";
-                loadingMsg.className = "error-msg";
-                outputContainer.style.display = "none";
-                return;
-            }
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
 
-            loadingMsg.innerText = "আপনার সনেট এবং মূলভাব লেখা হচ্ছে, অনুগ্রহ করে অপেক্ষা করুন...";
-            loadingMsg.className = "";
-            outputContainer.style.display = "none";
-
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
-
-            // এআই-কে নির্দিষ্ট ফরম্যাটে উত্তর দিতে বলা হয়েছে
-            const requestBody = {
-                contents: [{
-                    parts: [{ 
-                        text: `আপনি একজন প্রখ্যাত কবি। '${userTopic}' বিষয়ের উপর বাংলা ভাষায় একটি চমৎকার সনেট বা চতুর্দশপদী কবিতা লিখুন। প্রথম ৮ লাইন এবং পরের ৬ লাইন আলাদা করে লিখবেন। 
-                        
-                        কবিতা লেখা শেষ হলে ঠিক নিচে '|||' এই চিহ্নটি দেবেন এবং তারপর কবিতার মূলভাব (৩-৪ লাইনে) লিখবেন। 
-                        
-                        ফরম্যাট ঠিক এরকম হবে:
-                        [কবিতার ১৪ লাইন]
-                        |||
-                        [মূলভাব]` 
-                    }]
-                }],
-                safetySettings: [
-                    { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
-                    { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
-                    { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
-                    { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" }
-                ]
-            };
-
-            try {
-                const response = await fetch(url, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(requestBody)
-                });
-
-                const data = await response.json();
+    const requestBody = {
+        contents: [{
+            parts: [{ 
+                text: `আপনি একজন প্রখ্যাত কবি। '${userTopic}' বিষয়ের উপর বাংলা ভাষায় একটি চমৎকার সনেট বা চতুর্দশপদী কবিতা লিখুন। প্রথম ৮ লাইন এবং পরের ৬ লাইন আলাদা করে লিখবেন। 
                 
-                if (!response.ok) {
-                    loadingMsg.innerText = `দুঃখিত, একটি সমস্যা হয়েছে: ${data.error ? data.error.message : "সার্ভার এরর"}`;
-                    loadingMsg.className = "error-msg";
-                    return;
-                }
+                কবিতা লেখা শেষ হলে ঠিক নিচে '|||' এই চিহ্নটি দেবেন এবং তারপর কবিতার মূলভাব (৩-৪ লাইনে) লিখবেন। 
+                
+                ফরম্যাট ঠিক এরকম হবে:
+                [কবিতার ১৪ লাইন]
+                |||
+                [মূলভাব]` 
+            }]
+        }],
+        safetySettings: [
+            { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
+            { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
+            { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
+            { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" }
+        ]
+    };
 
-                if (data.candidates && data.candidates[0].content) {
-                    const fullText = data.candidates[0].content.parts[0].text;
-                    
-                    // '|||' চিহ্ন দিয়ে কবিতা ও মূলভাবকে আলাদা করা হচ্ছে
-                    const splitText = fullText.split('|||');
-                    const poemText = splitText[0].trim();
-                    const summaryText = splitText.length > 1 ? splitText[1].trim() : "দুঃখিত, মূলভাব তৈরি করা যায়নি।";
+    try {
+        const response = await fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(requestBody)
+        });
 
-                    poemBox.innerText = poemText;
-                    summaryBox.innerText = summaryText;
-                    
-                    loadingMsg.innerText = "";
-                    outputContainer.style.display = "flex"; // কার্ডগুলো প্রদর্শন করবে
-                } else {
-                    const reason = data.candidates && data.candidates[0] ? data.candidates[0].finishReason : "অজানা কারণ";
-                    loadingMsg.innerText = `গুগল তৈরি করতে পারেনি। কারণ: ${reason}`;
-                    loadingMsg.className = "error-msg";
-                }
+        const data = await response.json();
+        
+        if (!response.ok) {
+            loadingMsg.innerText = `সার্ভার ব্যস্ত বা লিমিট শেষ! দয়া করে ১ মিনিট অপেক্ষা করে আবার চেষ্টা করুন।`;
+            loadingMsg.className = "error-msg";
+        } else if (data.candidates && data.candidates[0].content) {
+            const fullText = data.candidates[0].content.parts[0].text;
+            
+            const splitText = fullText.split('|||');
+            const poemText = splitText[0].trim();
+            const summaryText = splitText.length > 1 ? splitText[1].trim() : "দুঃখিত, মূলভাব তৈরি করা যায়নি।";
 
-            } catch (error) {
-                loadingMsg.innerText = "নেটওয়ার্ক সমস্যা! আপনার ইন্টারনেট বা ভিপিএন (VPN) কানেকশন চেক করুন।";
-                loadingMsg.className = "error-msg";
-            }
+            poemBox.innerText = poemText;
+            summaryBox.innerText = summaryText;
+            
+            loadingMsg.innerText = "";
+            outputContainer.style.display = "flex"; 
         }
-    </script>
-</body>
-</html>
+
+    } catch (error) {
+        loadingMsg.innerText = "নেটওয়ার্ক সমস্যা! আপনার ইন্টারনেট বা ভিপিএন (VPN) কানেকশন চেক করুন।";
+        loadingMsg.className = "error-msg";
+    } finally {
+        // কাজ শেষ হলে বাটন আবার সচল করা হলো
+        submitBtn.disabled = false; 
+        submitBtn.style.background = "#007bff";
+    }
+}
